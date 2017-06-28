@@ -1,0 +1,17 @@
+
+{% from "_formhelpers.html" import render_field, render_checkbox_field %}
+<h2>{{_('Update the avatar')}}</h2>
+<form method="post" enctype="multipart/form-data">
+    <fieldset>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div>
+            <img id="uploadPreview" style="max-width: 100%">
+        </div>
+        {{ render_field(upload_form.avatar)}}
+        <div class="form-actions">
+            <button type="submit" name='btn' value="Upload" class="btn btn-primary">{{ _('Upload') }}</button>
+        </div>
+    </fieldset>
+</form>
+<!-- Update form for project data-->
+

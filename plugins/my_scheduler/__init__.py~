@@ -1,0 +1,69 @@
+import pybossa.sched as sched
+from pybossa.forms.forms import TaskSchedulerForm
+from flask.ext.plugins import Plugin
+from functools import wraps
+from pybossa.core import project_repo
+from pybossa.model.user import User
+from flask.ext.login import current_user
+
+__plugin__ = "FRGScheduler"
+__version__ = "0.0.1"
+
+SCHEDULER_NAME = 'FRG'
+SCHEDULER_DISPLAY_NAME = "FRG"
+
+
+def get_task(project_id, user_id=None, user_ip=None, n_answers=30, offset=0):
+	project = project_repo.get(project_id)
+	"""Get all available tasks for a given project and user."""
+ data = None
+    if user_id and not user_ip and not external_uid:
+        subquery = session.query(TaskRun.task_id).filter_by(project_id=project_id, user_id=user_id)
+    else:
+        if not user_ip:
+            user_ip = '127.0.0.1'
+        if user_ip and not external_uid:
+            subquery = session.query(TaskRun.task_id).filter_by(project_id=project_id, user_ip=user_ip)
+        else:
+            subquery = session.query(TaskRun.task_id).filter_by(project_id=project_id, external_uid=external_uid)
+
+    query = session.query(Task).filter(and_(~Task.id.in_(subquery.subquery()),
+                                            Task.project_id == project_id,
+                                            Task.state != 'completed'))
+	if project and len(project.tasks)>0:
+		if current_user.image_score>50:
+			return
+		elif current_user.video_score>50:
+			return
+		elif current_user.audio_score>50:
+			return
+		elif current_user.doc_score>50:
+			return
+		return others
+	else:
+		return None
+    #pass
+
+
+def with_frg_scheduler(f):
+    @wraps(f)
+    def wrapper(project_id, sched, user_id=None, user_ip=None, offset=0):
+        if sched == SCHEDULER_NAME:
+            return get_task(project_id, user_id, user_ip, offset=offset)
+        return f(project_id, sched, user_id=user_id, user_ip=user_ip, offset=offset)
+    return wrapper
+
+
+def variants_with_frg_scheduler(f):
+    @wraps(f)
+    def wrapper():
+        return f() + [(SCHEDULER_NAME, SCHEDULER_DISPLAY_NAME)]
+    return wrapper
+
+
+class FRGScheduler(Plugin):
+
+    def setup(self):
+        sched.new_task = with_frg_scheduler(sched.new_task)
+        sched.sched_variants = variants_with_frg_scheduler(sched.sched_variants)
+TaskSchedulerForm.update_sched_options(sched.sched_variants())
