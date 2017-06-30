@@ -133,7 +133,6 @@ def get_candidate_task_ids(project_id, user_id=None, user_ip=None,
 
 def sched_variants():
     return [('default', 'Default'), ('breadth_first', 'Breadth First'),('depth_first', 'Depth First')]
-    #return [()]
 
 def _set_orderby_desc(query, orderby, descending):
     """Set order by to query."""

@@ -99,8 +99,6 @@ class TaskPriorityForm(Form):
 class TaskSchedulerForm(Form):
     _translate_names = lambda variant: (variant[0], lazy_gettext(variant[1]))
     _choices = map(_translate_names, sched_variants())
-    print "Task Scheduler"
-    print _choices
     sched = SelectField(lazy_gettext('Task Scheduler'), choices=_choices)
 
     @classmethod
