@@ -844,9 +844,11 @@ def presenter(short_name):
      n_results) = project_by_shortname(short_name)
 
     if("importer_type" in project.info.keys()):
-        #session = db.slave_session
-        #is_quiz_given = session.query(user_score).filter_by(user_id=current_user.id, project_id=project_id).first()
-        #is_quiz_given = models.user_score.query.filter_by(user_id=current_user.id, project_id=project_id).first()
+
+        if(project.owner_id==current_user.id and not cached_users.is_quiz_created(current_user.id, project)):
+            flash("Quiz is not created.Please create the quiz","danger")
+            return redirect(url_for('quiz.create_quiz',short_name=short_name))
+
         is_quiz_given = cached_users.is_quiz_given(current_user.id, project.id)
         if(project.info["importer_type"]=="frg" and not is_quiz_given):
             flash("Quiz must be given before contribution","danger")
@@ -1677,7 +1679,12 @@ def publish(short_name):
     (project, owner, n_tasks, n_task_runs,
      overall_progress, last_activity,
      n_results) = project_by_shortname(short_name)
-
+    #### shruthi
+    if("importer_type" in project.info.keys()):
+        if(project.owner_id==current_user.id and not cached_users.is_quiz_created(current_user.id, project)):
+            flash("You did not created quiz.Please create the quiz","danger")
+            return redirect(url_for('quiz.create_quiz', short_name=project.short_name))
+    #### end
     pro = pro_features()
     ensure_authorized_to('publish', project)
     if request.method == 'GET':

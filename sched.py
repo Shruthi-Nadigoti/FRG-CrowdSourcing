@@ -89,7 +89,7 @@ def get_incremental_task(project_id, user_id=None, user_ip=None,
     transcriptions.
     """
     candidate_tasks = get_candidate_task_ids(project_id, user_id, user_ip,
-                                                external_uid, limit, offset, 
+                                                external_uid, limit, offset,
                                                 orderby='priority_0', desc=True)
     total_remaining = len(candidate_tasks)
     if total_remaining == 0:
@@ -132,9 +132,8 @@ def get_candidate_task_ids(project_id, user_id=None, user_ip=None,
 
 
 def sched_variants():
-    return [('default', 'Default'), ('breadth_first', 'Breadth First'),
-            ('depth_first', 'Depth First')]
-
+    return [('default', 'Default'), ('breadth_first', 'Breadth First'),('depth_first', 'Depth First')]
+    #return [()]
 
 def _set_orderby_desc(query, orderby, descending):
     """Set order by to query."""

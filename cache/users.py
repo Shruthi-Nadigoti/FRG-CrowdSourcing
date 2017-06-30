@@ -26,20 +26,25 @@ from pybossa.cache.projects import overall_progress, n_tasks, n_volunteers
 from pybossa.model.project import Project
 from pybossa.leaderboard.data import get_leaderboard as gl
 from pybossa.leaderboard.jobs import leaderboard as lb
-
+from flask import flash
 
 session = db.slave_session
 
 def is_quiz_given(user_id, project_id):
     #is_quiz = session.query(user_score).filter_by(user_id=current_user.id, project_id=project_id).first()
-    user_obj=db_session.query(User).filter_by(id=current_user.id).first()
+    user_obj=session.query(User).filter_by(id=user_id).first()
+    #x="Quiz must be given before contribution"
     if "score" in user_obj.info.keys():
         list_score=user_obj.info["score"]
         for i in list_score:
             if(i["project_id"]==project_id):
                 return True
-
     return False
+def is_quiz_created(user_id, project):
+    if "is_quiz_provided" in project.info.keys():
+        return True
+    return False
+
 
 def get_leaderboard(n, user_id=None, window=0):
     """Return the top n users with their rank."""

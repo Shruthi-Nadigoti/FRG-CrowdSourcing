@@ -28,6 +28,8 @@ def extract_files_local(fullpath,filename,project_id): #to extract the files ful
     for f in x: #looping through the files to classify
          srcfullpath = fullpath+ "/" + f
          #print srcfullpath
+         if(f.startswith("__MAC")):
+            continue
          if('.' in f):
                 m=time.time()
                 f_name=srcfullpath[srcfullpath.rfind('/')+1:] #getting only filename
@@ -45,7 +47,7 @@ def extract_files_local(fullpath,filename,project_id): #to extract the files ful
                     shutil.move(srcfullpath, dst)
                     os.rename(dst+"/"+f_name,(dst+"/"+str(m)+f_name))
                 elif(f.rsplit('.',1)[1].lower() in ['mp3']):#checking the extension with audio related things
-                    dst =fullpath+"/"+name+"/audio"
+                    dst =fullpath+"/"+name+"/audios"
                     shutil.move(srcfullpath, dst)
                     os.rename(dst+"/"+f_name,(dst+"/"+str(m)+f_name))
 
@@ -62,7 +64,7 @@ def extract_files_local(fullpath,filename,project_id): #to extract the files ful
         dictcount.update({'Documents':len(dirListing)})
     dirListing = os.listdir(fullpath+"/"+name+"/audios")
     if(len(dirListing)!=0):
-        dictcount.update({'Audio':len(dirListing)})
+        dictcount.update({'Audios':len(dirListing)})
     dictcount.update({'zzz':fullpath+"/"+name})#storing the classified folder path in dictionary
     #print fullpath+"/"+actual_name
     if os.path.exists(fullpath+"/"+actual_name):

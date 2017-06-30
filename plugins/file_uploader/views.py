@@ -25,7 +25,7 @@ from pybossa.cache import projects as cached_projects
 from sqlalchemy import update
 from pybossa.core import user_repo
 from pybossa.model.user import User
-
+from pybossa.plugins.quiz.views import is_quiz_provided
 blueprint = Blueprint('file_test', __name__,template_folder='templates',static_folder="static")
 zipobj={}
 list_container=[]
@@ -49,11 +49,12 @@ def allowed_file(filename):
 
 
 def check_file_size(file_path):
-    size=os.path.getsize(file_path)
+    """size=os.path.getsize(file_path)
     if(size<=1024*1024*5):
         return True
     print size
-    return False
+    return False"""
+    return True
 def store_questions(project):
 
     if(session.get("question") is not None):
@@ -106,11 +107,11 @@ def upload_task(short_name):
                         global zipobj
                         zipobj=extract_files_local((parent_path+"/uploads/"+CONTAINER),_file.filename,project.id)
                         session["zzz"]=zipobj["zzz"]
+                        zipobj.pop("zzz",None)
                         if "directory_names" not in project.info.keys():
                             project.info.update({"directory_names":[]})
                         project.info["directory_names"].append(session["zzz"])
                         project_repo.update(project)
-                        print zipobj["zzz"]
                         #add_task(project.id,zipobj["zzz"])
                         return redirect_content_type(url_for('.select_type',
                                                              short_name=short_name))
@@ -440,14 +441,14 @@ def select_type(short_name):
         list_container=request.form.getlist('selecttype') #selected classification list
         for i in li:
             if i not in list_container:
-                n=request.form.getlist('filepath')[0]#this is parent path of the folder which were unchecked by user
+                n=session["zzz"]#this is parent path of the folder which were unchecked by user
                 if os.path.exists(n+"/"+i.lower()):
                     shutil.rmtree(n+"/"+i.lower()) #deletion of folder
         if(len(list_container)==0):
             flash("You must select atleast one file","danger")
-            return  render_template('select_type.html',arr=zipobj,project=project_sanitized,
-            pro_features=pro)
+            return  render_template('select_type.html',arr=zipobj,project=project_sanitized,pro_features=pro)
         print "Going to function"
+        global previous_data
         p=draft_project(project)
         if(len(previous_data)!=0):
             l=" , ".join(previous_data)
@@ -505,7 +506,11 @@ def success(short_name):
     project_sanitized, owner_sanitized = sanitize_project_owner(project_button, owner, current_user)
     flash("Your Tasks Uploded Successfully","success")
     #return  render_template('success.html',project=project_sanitized,pro_features=pro) #we are going to tags.html
-    return redirect(url_for('quiz.create_quiz',short_name=short_name))
+    if(not is_quiz_provided(project.id)):
+        return redirect(url_for('quiz.create_quiz',short_name=short_name))
+    else:
+        return redirect(url_for('project.details',short_name=short_name))
+    #return  render_template('success.html',project=project_sanitized,pro_features=pro) #we are going to tags.html
 
 
 
@@ -667,5 +672,5 @@ def audios(short_name):
                     return redirect_content_type(url_for('.'+p.lower(),short_name=short_name))
                 else:
                     return redirect_content_type(url_for('.success',short_name=short_name))
-    return  render_template('videos.html',project=project_sanitized,
+    return  render_template('audios.html',project=project_sanitized,
     pro_features=pro) #we are going to tags.html

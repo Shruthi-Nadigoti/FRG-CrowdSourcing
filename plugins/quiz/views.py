@@ -21,6 +21,7 @@ from pybossa.cache.helpers import add_custom_contrib_button_to
 from pybossa.pro_features import ProFeatureHandler
 from pybossa.view.projects import sanitize_project_owner,project_by_shortname,pro_features
 from pybossa.model.user import User
+from pybossa.core import user_repo,project_repo
 
 
 blueprint = Blueprint('quiz', __name__, template_folder="templates")
@@ -131,44 +132,44 @@ def display_question(short_name):
 			#session['quiz_id']=-1;
 			user = {'nickname': 'Miguel'}
 
-			q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results = db.session.execute(q,dict(category='Image')).fetchall()
+			q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = :id AND quiz_id = :q_id;''')
+			results = db.session.execute(q,dict(category='Image', id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		image_total = len(results)
-            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True  AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results_true = db.session.execute(q,dict(category='Image')).fetchall()
+            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True  AND user_id = :id AND quiz_id = :q_id;''')
+			results_true = db.session.execute(q,dict(category='Image', id = current_user.id, q_id = session['quiz_id'])).fetchall()
                		image_correct = len(results_true)
                     	if image_total != 0:
                         	image_score = (image_correct * 100.0)/image_total
                    	else:
                        		image_score = 0
 
-               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results = db.session.execute(q,dict(category='Video')).fetchall()
+               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = :id AND quiz_id = :q_id;''')
+			results = db.session.execute(q,dict(category='Video',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		video_total = len(results)
-            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results_true = db.session.execute(q,dict(category='Video')).fetchall()
+            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = :id AND quiz_id = :q_id;''')
+			results_true = db.session.execute(q,dict(category='Video',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		video_correct = len(results_true)
                     	if video_total != 0:
                         	video_score = (image_correct * 100.0)/video_total
                     	else:
-                        	video_score = 0
+                            video_score = 0
 
-               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results = db.session.execute(q,dict(category='Audio')).fetchall()
+               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = :id AND quiz_id = :q_id;''')
+			results = db.session.execute(q,dict(category='Audio',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		audio_total = len(results)
-            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results_true = db.session.execute(q,dict(category='Audio')).fetchall()
+            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = :id AND quiz_id = :q_id;''')
+			results_true = db.session.execute(q,dict(category='Audio',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		audio_correct = len(results_true)
                     	if audio_total != 0:
                         	audio_score = (audio_correct * 100.0)/audio_total
                     	else:
                         	audio_score = 0
 
-               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results = db.session.execute(q,dict(category='Pdf')).fetchall()
+               		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND user_id = :id AND quiz_id = :q_id;''')
+			results = db.session.execute(q,dict(category='Pdf',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		pdf_total = len(results)
-            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = current_user.id AND quiz_id = session['quiz_id'];''')
-			results_true = db.session.execute(q,dict(category='Pdf')).fetchall()
+            		q=text('''SELECT * FROM response WHERE question_id IN (SELECT question_id FROM question WHERE category = :category) AND result = True AND user_id = :id AND quiz_id = :q_id;''')
+			results_true = db.session.execute(q,dict(category='Pdf',id=current_user.id, q_id = session['quiz_id'])).fetchall()
                		pdf_correct = len(results_true)
                     	if pdf_total != 0:
                         	pdf_score = (pdf_correct * 100.0)/pdf_total
@@ -182,12 +183,13 @@ def display_question(short_name):
                     	db_session = db.slave_session
                     	user_obj=db_session.query(User).filter_by(id=current_user.id).first()
                     	if "score" not in user_obj.info.keys():
-                    		user_obj.info.update({"score:[]"})
-                    		dictobj={"project_id":project.id,"image_score":image_score,"video_score":video_score, 									"document_score":document_score,"audio_score":audio_score}
-                    		user_obj.info["score"].append(dictobj)
-                    		user_repo.update();
-                    ####### end 
-			return redirect(url_for('quiz.display_result',short_name=short_name))
+                    	    user_obj.info.update({"score":[]})
+                    	dictobj={"project_id":project.id,"image_score":image_score,"video_score":video_score,"document_score":pdf_score,"audio_score":audio_score}
+                    	user_obj.info["score"].append(dictobj)
+                    	user_repo.update(user_obj);
+                    ####### end
+            		flash("Responses recorded Successfully","success")
+			return redirect(url_for('project.presenter',short_name=short_name))
 	else:
 		q = models.question.query.filter_by(quiz_id=session['quiz_id']).first()
 		form.submission.choices = [(q.option1, q.option1), (q.option2, q.option2), (q.option3, q.option3), (q.option4, q.option4)]
@@ -208,7 +210,9 @@ def gettype(filename):
 		return "document"
 
 # create Quiz
-
+def is_quiz_provided(project_id):
+    x=models.quiz.query.filter_by(project_id=project_id).first()
+    return x
 @blueprint.route('/<short_name>/create_quiz', methods=['GET', 'POST'])
 @login_required
 def create_quiz(short_name):
@@ -224,6 +228,8 @@ def create_quiz(short_name):
 		q=quiz(name=quiz_name,project_id=project_id)
 		db.session.add(q)
 		db.session.commit()
+        	project.info.update({"is_quiz_provided":True})
+        	project_repo.update(project)
 		session['quiz_name']=quiz_name
 		session['quiz_id'] = models.quiz.query.filter_by(name=quiz_name, project_id = project_id).first().quiz_id
         	flash("Sucessfully created quiz","success")

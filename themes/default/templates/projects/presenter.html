@@ -19,30 +19,6 @@
         nope: '{{url_for('static', filename='js/vendor/json2.min.js')}}'
 });
 </script>
-<script>
-  try{
-    p=$.ajax({
-              url:'/api/project',
-              data: 'id='+1,
-              dataType:'json'
-          });
-    //alert("hiii"+p.data[0])
-    var x;
-    p.then(function(data) {
-    x=data[0];
-    alert(x)
-      for (var property in x) {
-        if(property=="info")
-        alert(x[property]["thumbnail_url"])
-
-    }})
-    //alert(x)
-
- }catch(e)
- {
-   alert(e)
- }
-</script>
 
 <div class="container">
     <div class="row">
